@@ -13,7 +13,7 @@
 <body style="text-align: center; padding: 0; border: 0; margin: 0;">
     <canvas id="unity-canvas" tabindex="-1"
         style="width: 100vw; height: 100vh; background: #231F20"></canvas>
-    <script src="Build/server.loader.js"></script>
+    <script src="Build/Tele_Wallet_Demo.loader.js"></script>
     <script>
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
             // Mobile device style: fill the whole browser client area with the game canvas:
@@ -31,9 +31,9 @@
         }
 
         createUnityInstance(document.querySelector("#unity-canvas"), {
-            dataUrl: "Build/server.data",
-            frameworkUrl: "Build/server.framework.js",
-        codeUrl: "Build/server.wasm",
+            dataUrl: "Build/Tele_Wallet_Demo.data",
+            frameworkUrl: "Build/Tele_Wallet_Demo.framework.js",
+        codeUrl: "Build/Tele_Wallet_Demo.wasm",
         streamingAssetsUrl: "StreamingAssets",
             companyName: "KVIP",
             productName: "ERS",
