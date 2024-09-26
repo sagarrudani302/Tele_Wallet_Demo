@@ -36,11 +36,11 @@ window.addEventListener("load", function () {
   }
 
   var buildUrl = "Build";
-  var loaderUrl = buildUrl + "/WowWalletTest.loader.js";
+  var loaderUrl = buildUrl + "/wow wallet server build.loader.js";
   var config = {
-    dataUrl: buildUrl + "/WowWalletTest.data.unityweb",
-    frameworkUrl: buildUrl + "/WowWalletTest.framework.js.unityweb",
-    codeUrl: buildUrl + "/WowWalletTest.wasm.unityweb",
+    dataUrl: buildUrl + "/wow wallet server build.data.unityweb",
+    frameworkUrl: buildUrl + "/wow wallet server build.framework.js.unityweb",
+    codeUrl: buildUrl + "/wow wallet server build.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "DefaultCompany",
     productName: "C# TonConnect",
