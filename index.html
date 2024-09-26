@@ -6,16 +6,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | ERS</title>
 
-  
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<!-- Include TON Connect SDK from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest/dist/tonconnect-sdk.umd.js"></script>
-
+    <!-- Include Telegram Web Apps SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Include TON Connect SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest/dist/tonconnect-sdk.umd.js"></script>
+    
+    <!-- Include TON Web SDK -->
+    <script src="https://unpkg.com/tonweb/dist/tonweb.min.js"></script>
 </head>
 
 <body style="text-align: center; padding: 0; border: 0; margin: 0;">
-    <canvas id="unity-canvas" tabindex="-1"
-        style="width: 100vw; height: 100vh; background: #231F20"></canvas>
+    <canvas id="unity-canvas" tabindex="-1" style="width: 100vw; height: 100vh; background: #231F20"></canvas>
+    
     <script src="Build/server.loader.js"></script>
     <script>
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -36,29 +39,38 @@
         createUnityInstance(document.querySelector("#unity-canvas"), {
             dataUrl: "Build/server.data",
             frameworkUrl: "Build/server.framework.js",
-        codeUrl: "Build/server.wasm",
-        streamingAssetsUrl: "StreamingAssets",
+            codeUrl: "Build/server.wasm",
+            streamingAssetsUrl: "StreamingAssets",
             companyName: "KVIP",
             productName: "ERS",
             productVersion: "1.0",
-        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
-      }).then((unityInstance) => {
-        console.log('Instance created',window.Telegram.WebApp);
-                window.unityInstance = unityInstance;
-                window.unityInstance.SendMessage("TelegramController", "SetWebAppUser", JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user));
-            });
+            // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+            // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+        }).then((unityInstance) => {
+            console.log('Instance created', window.Telegram.WebApp);
+            window.unityInstance = unityInstance;
+
+            // Send user data to Unity
+            const user = window.Telegram.WebApp.initDataUnsafe.user;
+            if (user) {
+                window.unityInstance.SendMessage("TelegramController", "SetWebAppUser", JSON.stringify(user));
+            } else {
+                console.error("User data is unavailable");
+            }
+        }).catch((error) => {
+            console.error("Error creating Unity instance:", error);
+        });
     </script>
 
     <script>
-    if(window.Telegram.WebApp){
-        window.Telegram.WebApp.onEvent('qrTextReceived',async (obj)=>{
-            console.log('#qrTextReceived',obj)
-            if( window.unityInstance){
-                window.unityInstance.SendMessage("TelegramController", "OnQrDetected", obj.data);
-            }
-        })
-    }
+        if (window.Telegram.WebApp) {
+            window.Telegram.WebApp.onEvent('qrTextReceived', async (obj) => {
+                console.log('#qrTextReceived', obj);
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage("TelegramController", "OnQrDetected", obj.data);
+                }
+            });
+        }
     </script>
 </body>
 
