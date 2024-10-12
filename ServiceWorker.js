@@ -1,9 +1,9 @@
 const cacheName = "DefaultCompany-WebGLInput-0.1";
 const contentToCache = [
     "Build/Telegram Input.loader.js",
-    "Build/Telegram Input.framework.js.gz",
-    "Build/Telegram Input.data.gz",
-    "Build/Telegram Input.wasm.gz",
+    "Build/Telegram Input.framework.js",
+    "Build/Telegram Input.data",
+    "Build/Telegram Input.wasm",
     "TemplateData/style.css"
 
 ];
