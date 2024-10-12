@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "261834920472",
+    "project_id": "worrior-of-wealth",
+    "storage_bucket": "worrior-of-wealth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261834920472:android:5d5f2d27f56901e568296d",
+        "android_client_info": {
+          "package_name": "com.contest.worriorofwealth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "261834920472-oaq77ie7ifp47alvl2703jka6ojmc3ng.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.contest.worriorofwealth",
+            "certificate_hash": "bb1ee20be61b8c8c8f0a90bf3ef259dc60f1550f"
+          }
+        },
+        {
+          "client_id": "261834920472-m32i0k3a5g48r4rmrvft351818q3f4ai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjZRixHd0423LxjVkvVVCSs5vzbZfOXss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "261834920472-m32i0k3a5g48r4rmrvft351818q3f4ai.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "261834920472-80mbjimmpbb76es1md4g1f3p3lr5hq4v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.contest.worriorofwealth"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
