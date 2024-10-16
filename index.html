@@ -2,186 +2,141 @@
 <html lang="en-us">
 
 <head>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tonweb@0.0.56/dist/tonweb.min.js"></script>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Unity WebGL Player | C# TonConnect</title>
-  <link rel="shortcut icon" href="TemplateData/favicon.ico">
-  <link rel="stylesheet" href="TemplateData/style.css">
-  <link rel="manifest" href="manifest.webmanifest">
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tonweb@0.0.56/dist/tonweb.min.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Wow_Web_Telegram</title>
+
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 
-<body>
-  <div id="unity-container">
-    <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
-    <div id="unity-loading-bar">
-      <div id="unity-logo"></div>
-      <div id="unity-progress-bar-empty">
-        <div id="unity-progress-bar-full"></div>
-      </div>
-    </div>
-    <div id="unity-warning"> </div>
-  </div>
-  <script>
-    window.addEventListener("load", function () {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("ServiceWorker.js");
-      }
-    });
+<body style="text-align: center; padding: 0; border: 0; margin: 0;">
+    <canvas id="unity-canvas" tabindex="-1" style="width: 100vw; height: 100vh; background: #1F1F20"></canvas>
+    <script src="Build/Telegram Wow Demo.loader.js"></script>
+    <script>
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            // Mobile device style: fill the whole browser client area with the game canvas:
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
 
-    var container = document.querySelector("#unity-container");
-    var canvas = document.querySelector("#unity-canvas");
-    var loadingBar = document.querySelector("#unity-loading-bar");
-    var progressBarFull = document.querySelector("#unity-progress-bar-full");
-    var warningBanner = document.querySelector("#unity-warning");
+            var canvas = document.querySelector("#unity-canvas");
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = "fixed";
 
-    // Shows a temporary message banner/ribbon for a few seconds, or
-    // a permanent error message on top of the canvas if type=='error'.
-    // If type=='warning', a yellow highlight color is used.
-    // Modify or remove this function to customize the visually presented
-    // way that non-critical warnings and error messages are presented to the
-    // user.
-    function unityShowBanner(msg, type) {
-      function updateBannerVisibility() {
-        warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-      }
-      var div = document.createElement('div');
-      div.innerHTML = msg;
-      warningBanner.appendChild(div);
-      if (type == 'error') div.style = 'background: red; padding: 10px;';
-      else {
-        if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-        setTimeout(function () {
-          warningBanner.removeChild(div);
-          updateBannerVisibility();
-        }, 5000);
-      }
-      updateBannerVisibility();
-    }
+            document.body.style.textAlign = "left";
+        }
 
-    var buildUrl = "Build";
-    var loaderUrl = buildUrl + "/wow wallet server build.loader.js";
-    var config = {
-      dataUrl: buildUrl + "/wow wallet server build.data",
-      frameworkUrl: buildUrl + "/wow wallet server build.framework.js",
-      codeUrl: buildUrl + "/wow wallet server build.wasm",
-      streamingAssetsUrl: "StreamingAssets",
-      companyName: "DefaultCompany",
-      productName: "C# TonConnect",
-      productVersion: "1.0",
-      showBanner: unityShowBanner,
-    };
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+            dataUrl: "Build/7e35b9e069323f70ce94290b4f438355.data",
+            frameworkUrl: "Build/a3c1463d09483bfb9591c219300d391c.js",
+            codeUrl: "Build/b825a4b5e655647932b85720dbb1d3a3.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "Wow_Web_Telegram",
+            productVersion: "1.0",
+            // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+            // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+        }).then((unityInstance) => {
+            console.log('Instance created', window.Telegram.WebApp);
+            window.unityInstance = unityInstance;
+            window.unityInstance.SendMessage("TelegramController", "SetWebAppUser", JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user));
+        });
+    </script>
 
-    // By default Unity keeps WebGL canvas render target size matched with
-    // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-    // Set this to false if you want to decouple this synchronization from
-    // happening inside the engine, and you would instead like to size up
-    // the canvas DOM size and WebGL render target sizes yourself.
-    // config.matchWebGLToCanvasSize = false;
-
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      // Mobile device style: fill the whole browser client area with the game canvas:
-      var meta = document.createElement('meta');
-      meta.name = 'viewport';
-      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-      document.getElementsByTagName('head')[0].appendChild(meta);
-    }
-
-    loadingBar.style.display = "block";
-
-    var script = document.createElement("script");
-    script.src = loaderUrl;
-    script.onload = () => {
-      createUnityInstance(canvas, config, (progress) => {
-        progressBarFull.style.width = 100 * progress + "%";
-      }).then((unityInstance) => {
-        window.unityInstance = unityInstance;
-        loadingBar.style.display = "none";
-      }).catch((message) => {
-        alert(message);
-      });
-    };
-    document.body.appendChild(script);
-  </script>
-  <script>
-    let tonConnectUI;
-
-    // Initialize TonConnect
-    async function initTonConnect() {
-      tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-        manifestUrl: 'https://greensoilorganic.com/wow/wow-telegram-wallet.json', // Replace with your app's manifest URL
-      });
-    }
-
-    // Function to connect wallet
-    async function connectWallet() {
-      try {
-        await tonConnectUI.connectWallet(); // Connect wallet
-        const walletAddress = tonConnectUI.wallet.account.address; // Get wallet address
-        return walletAddress; // Return wallet address to Unity
-      } catch (error) {
-        console.error('Error connecting wallet:', error);
-        return null; // Return null in case of error
-      }
-    }
-
-    // Function to disconnect wallet
-    async function disconnectWallet() {
-      try {
-        await tonConnectUI.disconnect(); // Disconnect wallet
-        return true; // Return true if successfully disconnected
-      } catch (error) {
-        console.error('Error disconnecting wallet:', error);
-        return false; // Return false in case of error
-      }
-    }
-
-    // Function to send transaction
-    async function sendTransaction(recipientAddress, amountInTon) {
-      const amountInNanotons = amountInTon * 1e9; // Convert to nanotons
-
-      const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [
-          {
-            address: recipientAddress,
-            amount: amountInNanotons.toString(),
-          }
-        ],
-      };
-
-      try {
-        const result = await tonConnectUI.sendTransaction(transaction);
-        const msgHash = await getTransactionHash(result.boc); // Get transaction hash
-        return { success: true, hash: msgHash }; // Return hash on success
-      } catch (error) {
-        console.error('Error sending transaction:', error);
-        return { success: false, error: error.message }; // Return error message on failure
-      }
-    }
-
-    // Function to convert BOC to hash
-    async function getTransactionHash(bocString) {
-      try {
+    <script>
+        if (window.Telegram.WebApp) {
+            window.Telegram.WebApp.onEvent('qrTextReceived', async (obj) => {
+                console.log('#qrTextReceived', obj)
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage("TelegramController", "OnQrDetected", obj.data);
+                }
+            })
+        }
+    </script>
+    <script>
+        let tonConnectUI;
         const tonweb = new TonWeb();
-        const bocCell = tonweb.boc.Cell.oneFromBoc(tonweb.utils.base64ToBytes(bocString));
-        const msgHash = await bocCell.hash(); // Await the hash calculation
-        return tonweb.utils.bytesToBase64(msgHash); // Convert the hash to base64 format
-      } catch (error) {
-        console.error("Error calculating hash:", error);
-        return null; // Return null on error
-      }
-    }
-
-    // Expose functions to Unity
-    window.connectWallet = connectWallet;
-    window.disconnectWallet = disconnectWallet;
-    window.sendTransaction = sendTransaction;
-
-    // Initialize TonConnect on page load
-    window.addEventListener('load', initTonConnect);
-  </script>
+    
+        // Initialize TonConnect
+        async function initTonConnect() {
+          tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://greensoilorganic.com/wow/wow-telegram-wallet.json', // Replace with your app's manifest URL
+          });
+        }
+    
+        // Function to connect wallet
+        async function connectWallet() {
+          try {
+            await tonConnectUI.connectWallet(); // Connect wallet
+            const walletAddress = tonConnectUI.wallet.account.address; // Get wallet address
+            return walletAddress; // Return wallet address to Unity
+          } catch (error) {
+            console.error('Error connecting wallet:', error);
+            return null; // Return null in case of error
+          }
+        }
+    
+        // Function to disconnect wallet
+        async function disconnectWallet() {
+          try {
+            await tonConnectUI.disconnect(); // Disconnect wallet
+            return true; // Return true if successfully disconnected
+          } catch (error) {
+            console.error('Error disconnecting wallet:', error);
+            return false; // Return false in case of error
+          }
+        }
+    
+        // Function to send transaction
+        async function sendTransaction(recipientAddress, amountInTon) {
+          const amountInNanotons = amountInTon * 1e9; // Convert to nanotons
+    
+          const transaction = {
+            validUntil: Math.floor(Date.now() / 1000) + 600,
+            messages: [
+              {
+                address: recipientAddress,
+                amount: amountInNanotons.toString(),
+              }
+            ],
+          };
+    
+          try {
+            const result = await tonConnectUI.sendTransaction(transaction);
+            const msgHash = await getTransactionHash(result.boc); // Get transaction hash
+            return { success: true, hash: msgHash }; // Return hash on success
+          } catch (error) {
+            console.error('Error sending transaction:', error);
+            return { success: false, error: error.message }; // Return error message on failure
+          }
+        }
+    
+        // Function to convert BOC to hash
+        async function getTransactionHash(bocString) {
+          try {
+            const tonweb = new TonWeb();
+            const bocCell = tonweb.boc.Cell.oneFromBoc(tonweb.utils.base64ToBytes(bocString));
+            const msgHash = await bocCell.hash(); // Await the hash calculation
+            return tonweb.utils.bytesToBase64(msgHash); // Convert the hash to base64 format
+          } catch (error) {
+            console.error("Error calculating hash:", error);
+            return null; // Return null on error
+          }
+        }
+    
+        // Expose functions to Unity
+        window.connectWallet = connectWallet;
+        window.disconnectWallet = disconnectWallet;
+        window.sendTransaction = sendTransaction;
+    
+        // Initialize TonConnect on page load
+        window.addEventListener('load', initTonConnect);
+      </script>
 </body>
 
 </html>
