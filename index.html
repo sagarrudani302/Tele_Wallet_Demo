@@ -1,214 +1,225 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 
 <head>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tonweb@0.0.56/dist/tonweb.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send TON Transaction</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tonweb@0.0.56/dist/tonweb.min.js"></script>
+    <style>
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Unity WebGL Player | C# TonConnect</title>
-  <link rel="shortcut icon" href="TemplateData/favicon.ico">
-  <link rel="stylesheet" href="TemplateData/style.css">
-  <link rel="manifest" href="manifest.webmanifest">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="./tonweb.js"></script>
+        .input-field {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .address-display {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-  <div id="unity-container">
-    <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
-    <div id="unity-loading-bar">
-      <div id="unity-logo"></div>
-      <div id="unity-progress-bar-empty">
-        <div id="unity-progress-bar-full"></div>
-      </div>
+
+    <div class="container">
+        <h2>Connect Wallet & Send TON Transaction</h2>
+
+        <button id="connect-wallet-button" class="btn">Connect Wallet</button>
+        <button id="disconnect-wallet-button" class="btn" style="display:none;">Disconnect Wallet</button>
+
+        <div id="wallet-address" class="address-display" style="display:none;"></div>
+
+        <input type="text" id="recipient-address" class="input-field" placeholder="Recipient Address">
+        <input type="number" id="transaction-amount" class="input-field" placeholder="Amount in TON">
+
+        <button id="send-transaction-button" class="btn">Send Transaction</button>
+
+        <div id="transaction-feedback"></div>
     </div>
-    <div id="unity-warning"> </div>
-  </div>
-  <script>
-    window.addEventListener("load", function () {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("ServiceWorker.js");
-      }
-    });
+    <script>
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://greensoilorganic.com/wow/wow-telegram-wallet.json', // Replace with your app's manifest URL
+        });
+        // Function to get user-friendly TON address
+        async function getTonAddress(userFriendly = true) {
+            const wallet = tonConnectUI.wallet;
 
-    var container = document.querySelector("#unity-container");
-    var canvas = document.querySelector("#unity-canvas");
-    var loadingBar = document.querySelector("#unity-loading-bar");
-    var progressBarFull = document.querySelector("#unity-progress-bar-full");
-    var warningBanner = document.querySelector("#unity-warning");
+            if (wallet) {
+                const address = wallet.account.address;
+                const chain = wallet.account.chain;
 
-    function unityShowBanner(msg, type) {
-      var div = document.createElement('div');
-      div.innerHTML = msg;
-      warningBanner.appendChild(div);
-      if (type == 'error') div.style = 'background: red; padding: 10px;';
-      else if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-      setTimeout(() => {
-        warningBanner.removeChild(div);
-      }, 5000);
-    }
-
-    var buildUrl = "Build";
-    var loaderUrl = buildUrl + "/wow wallet server build.loader.js";
-    var config = {
-      dataUrl: buildUrl + "/wow wallet server build.data",
-      frameworkUrl: buildUrl + "/wow wallet server build.framework.js",
-      codeUrl: buildUrl + "/wow wallet server build.wasm",
-      streamingAssetsUrl: "StreamingAssets",
-      companyName: "DefaultCompany",
-      productName: "C# TonConnect",
-      productVersion: "1.0",
-      showBanner: unityShowBanner,
-    };
-
-    loadingBar.style.display = "block";
-
-    var script = document.createElement("script");
-    script.src = loaderUrl;
-    script.onload = () => {
-      createUnityInstance(canvas, config, (progress) => {
-        progressBarFull.style.width = 100 * progress + "%";
-      }).then((unityInstance) => {
-        loadingBar.style.display = "none";
-      }).catch((message) => {
-        alert(message);
-      });
-    };
-    document.body.appendChild(script);
-  </script>
-
-  <script>
-    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: 'https://greensoilorganic.com/wow/wow-telegram-wallet.json', // Replace with your app's manifest URL
-    });
-    // Function to get user-friendly TON address
-    async function getTonAddress(userFriendly = true) {
-      const wallet = tonConnectUI.wallet;
-
-      if (wallet) {
-        const address = wallet.account.address;
-        const chain = wallet.account.chain;
-
-        // If userFriendly is true, convert to friendly address
-        return userFriendly
-          ? TON_CONNECT_UI.toUserFriendlyAddress(address, chain === TON_CONNECT_UI.CHAIN.TESTNET)
-          : address;
-      } else {
-        return '';
-      }
-    }
-
-    // // Function to check if the wallet is already connected
-    // async function checkWalletConnection() {
-    //   const isConnected = tonConnectUI.wallet; // Check if wallet is connected
-
-    //   if (isConnected) {
-    //     const walletAddress = tonConnectUI.wallet.account.address; // Get wallet address
-
-    //     const tonAddress = await getTonAddress();
-    //     console.log('User TON Address:', tonAddress);
-
-    //     // Display the processed address
-    //     walletAddressDiv.innerText = `Connected: ${tonAddress}`;
-    //     walletAddressDiv.style.display = 'block';
-    //     connectWalletButton.style.display = 'none';
-    //     disconnectWalletButton.style.display = 'inline-block';
-    //   } else {
-    //     connectWalletButton.style.display = 'inline-block';
-    //     disconnectWalletButton.style.display = 'none';
-    //   }
-    // }
-
-    // Function to connect wallet
-    async function connectWallet() {
-      try {
-        await disconnectWallet();
-        await tonConnectUI.connectWallet(); // Connect wallet
-        // checkWalletConnection(); // Check connection status
-      } catch (error) {
-        console.error('Error connecting wallet:', error);
-      }
-    }
-
-    // Function to disconnect wallet
-    async function disconnectWallet() {
-      try {
-        await tonConnectUI.disconnect(); // Disconnect wallet
-        walletAddressDiv.style.display = 'none';
-        connectWalletButton.style.display = 'inline-block';
-        disconnectWalletButton.style.display = 'none';
-      } catch (error) {
-        console.error('Error disconnecting wallet:', error);
-      }
-    }
-
-    // Function to send transaction
-    async function sendTransaction() {
-      const recipientAddress = recipientAddressInput.value;
-      const amountInTon = transactionAmountInput.value;
-
-      if (!recipientAddress || !amountInTon) {
-        return;
-      }
-
-      const amountInNanotons = amountInTon * 1e9;
-
-      const transaction = {
-        validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [
-          {
-            address: recipientAddress,
-            amount: amountInNanotons.toString(),
-          }
-        ],
-      };
-
-      try {
-        const result = await tonConnectUI.sendTransaction(transaction);
-
-        console.log('result', result);
-        console.log('transactionHash', getTransactionHash(result.boc));
-
-      } catch (error) {
-        console.error('Error sending transaction:', error);
-        let errorMessage = '';
-
-        if (error.message.includes('insufficient')) {
-          errorMessage = 'Insufficient funds. Please check your balance.';
-        } else if (error.message.includes('cancel')) {
-          errorMessage = 'Transaction was cancelled.';
-        } else {
-          errorMessage = 'Error sending transaction. Please try again.';
+                // If userFriendly is true, convert to friendly address
+                return userFriendly
+                    ? TON_CONNECT_UI.toUserFriendlyAddress(address, chain === TON_CONNECT_UI.CHAIN.TESTNET)
+                    : address;
+            } else {
+                return '';
+            }
         }
 
-      }
-    }
+        const connectWalletButton = document.getElementById('connect-wallet-button');
+        const disconnectWalletButton = document.getElementById('disconnect-wallet-button');
+        const sendTransactionButton = document.getElementById('send-transaction-button');
+        const recipientAddressInput = document.getElementById('recipient-address');
+        const transactionAmountInput = document.getElementById('transaction-amount');
+        const feedbackDiv = document.getElementById('transaction-feedback');
+        const walletAddressDiv = document.getElementById('wallet-address');
 
-    // Initialize tonweb
-    const tonweb = new TonWeb();
+        // Function to check if the wallet is already connected
+        async function checkWalletConnection() {
+            const isConnected = tonConnectUI.wallet; // Check if wallet is connected
 
-    // Function to convert BOC to hash
-    async function getTransactionHash(bocString) {
-      try {
-        // Convert BOC string from base64 to bytes
-        const bocCell = tonweb.boc.Cell.oneFromBoc(tonweb.utils.base64ToBytes(bocString));
+            if (isConnected) {
+                const walletAddress = tonConnectUI.wallet.account.address; // Get wallet address
 
-        // Calculate the hash of the BOC cell
-        const msgHash = await bocCell.hash(); // Await the hash calculation
+                const tonAddress = await getTonAddress();
+                console.log('User TON Address:', tonAddress);
 
-        // Convert the hash to base64 format
-        const YOUR_MSG_HASH = tonweb.utils.bytesToBase64(msgHash);
+                // Display the processed address
+                walletAddressDiv.innerText = `Connected: ${tonAddress}`;
+                walletAddressDiv.style.display = 'block';
+                connectWalletButton.style.display = 'none';
+                disconnectWalletButton.style.display = 'inline-block';
+            } else {
+                connectWalletButton.style.display = 'inline-block';
+                disconnectWalletButton.style.display = 'none';
+            }
+        }
 
-        console.log("Msg Hash:", YOUR_MSG_HASH);
+        // Function to connect wallet
+        async function connectWallet() {
+            try {
+                await disconnectWallet();
+                await tonConnectUI.connectWallet(); // Connect wallet
+                checkWalletConnection(); // Check connection status
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                feedbackDiv.innerHTML = '<p class="error">Error connecting wallet. Please try again.</p>';
+            }
+        }
 
-      } catch (error) {
-        console.error("Error calculating hash:", error);
-      }
-    }
+        // Function to disconnect wallet
+        async function disconnectWallet() {
+            try {
+                await tonConnectUI.disconnect(); // Disconnect wallet
+                walletAddressDiv.style.display = 'none';
+                connectWalletButton.style.display = 'inline-block';
+                disconnectWalletButton.style.display = 'none';
+            } catch (error) {
+                console.error('Error disconnecting wallet:', error);
+                feedbackDiv.innerHTML = '<p class="error">Error disconnecting wallet. Please try again.</p>';
+            }
+        }
 
-  </script>
+        // Function to send transaction
+        async function sendTransaction() {
+            const recipientAddress = recipientAddressInput.value;
+            const amountInTon = transactionAmountInput.value;
+
+            if (!recipientAddress || !amountInTon) {
+                feedbackDiv.innerHTML = '<p class="error">Please fill in both fields!</p>';
+                return;
+            }
+
+            const amountInNanotons = amountInTon * 1e9;
+
+            const transaction = {
+                validUntil: Math.floor(Date.now() / 1000) + 600,
+                messages: [
+                    {
+                        address: recipientAddress,
+                        amount: amountInNanotons.toString(),
+                    }
+                ],
+            };
+
+            try {
+                const result = await tonConnectUI.sendTransaction(transaction);
+
+                console.log('result', result);
+                console.log('transactionHash', getTransactionHash(result.boc));
+
+            } catch (error) {
+                console.error('Error sending transaction:', error);
+                let errorMessage = '';
+
+                if (error.message.includes('insufficient')) {
+                    errorMessage = 'Insufficient funds. Please check your balance.';
+                } else if (error.message.includes('cancel')) {
+                    errorMessage = 'Transaction was cancelled.';
+                } else {
+                    errorMessage = 'Error sending transaction. Please try again.';
+                }
+
+                feedbackDiv.innerHTML = `<p class="error">${errorMessage}</p>`;
+            }
+        }
+
+        // Initialize tonweb
+        const tonweb = new TonWeb();
+
+        // Function to convert BOC to hash
+        async function getTransactionHash(bocString) {
+            try {
+                // Convert BOC string from base64 to bytes
+                const bocCell = tonweb.boc.Cell.oneFromBoc(tonweb.utils.base64ToBytes(bocString));
+
+                // Calculate the hash of the BOC cell
+                const msgHash = await bocCell.hash(); // Await the hash calculation
+
+                // Convert the hash to base64 format
+                const YOUR_MSG_HASH = tonweb.utils.bytesToBase64(msgHash);
+
+                console.log("Msg Hash:", YOUR_MSG_HASH);
+
+                feedbackDiv.innerHTML = `<p class="success">Transaction sent successfully! Transaction hash: ${YOUR_MSG_HASH}</p>`;
+            } catch (error) {
+                console.error("Error calculating hash:", error);
+            }
+        }
+
+        // Call the function with your BOC string
+        getTransactionHash('te6cckEBAgEAqQAB4YgB2QIJE36BEKr10ORWqoVTVjJTpAMWcg3bfseL86ACVqgAS6fpFX8EkBeZiK0gspqy4jOaNZyU9bqOnh1gIPjlOZVO42WFujQcvj5Jhx5ZsVix4KA0H4x2YL+YF5aTvOsgUU1NGLs4aQHYAAAAsAAcAQBmQgB2QIJE36BEKr10ORWqoVTVjJTpAMWcg3bfseL86ACVqhzEtAAAAAAAAAAAAAAAAAAANqEYKw==');
+
+        connectWalletButton.addEventListener('click', connectWallet);
+        disconnectWalletButton.addEventListener('click', disconnectWallet);
+        sendTransactionButton.addEventListener('click', sendTransaction);
+
+        // Check wallet connection on page load
+        window.addEventListener('load', checkWalletConnection);
+    </script>
 
 </body>
 
