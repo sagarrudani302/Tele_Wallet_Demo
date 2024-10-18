@@ -1,96 +1,191 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <title>Wow_Web_Telegram</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
-    <link rel="stylesheet" href="TemplateData/style.css" />
-  </head>
-  <body class="dark">
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas"></canvas>
-    </div>
-    <div id="loading-cover" style="display: none">
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty" style="display: none">
-          <div id="unity-progress-bar-full"></div>
-        </div>
-        <div class="spinner"></div>
+
+<head>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tonweb@0.0.56/dist/tonweb.min.js"></script>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Wow_Web_Telegram</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+  <link rel="stylesheet" href="TemplateData/style.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body class="dark">
+  <div id="unity-container" class="unity-desktop">
+    <canvas id="unity-canvas"></canvas>
+  </div>
+  <div id="loading-cover" style="display: none">
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty" style="display: none">
+        <div id="unity-progress-bar-full"></div>
       </div>
+      <div class="spinner"></div>
     </div>
-    <div id="unity-fullscreen-button" style="display: none"></div>
-    <script type="module">
-            const hideFullScreenButton = "";
-            const buildUrl = "Build";
-            const loaderUrl = buildUrl + "/New WOW Telegram Build.loader.js";
-            const config = {
-              dataUrl: buildUrl + "/e613220ab43d358eb7182b9d89b2bc06.data",
-              frameworkUrl: buildUrl + "/01f47b6e0a1bede3c2e816f5dc139f2e.js",
-              codeUrl: buildUrl + "/9dc3030a29dc4fd0c47cb260c7329326.wasm",
-              streamingAssetsUrl: "StreamingAssets",
-              companyName: "DefaultCompany",
-              productName: "Wow_Web_Telegram",
-              productVersion: "1.0",
-            };
+  </div>
+  <div id="unity-fullscreen-button" style="display: none"></div>
+  <script type="module">
+    const hideFullScreenButton = "";
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/New WOW Telegram Build.loader.js";
+    const config = {
+      dataUrl: buildUrl + "/e613220ab43d358eb7182b9d89b2bc06.data",
+      frameworkUrl: buildUrl + "/01f47b6e0a1bede3c2e816f5dc139f2e.js",
+      codeUrl: buildUrl + "/9dc3030a29dc4fd0c47cb260c7329326.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "DefaultCompany",
+      productName: "Wow_Web_Telegram",
+      productVersion: "1.0",
+    };
 
-            const container = document.querySelector("#unity-container");
-            const canvas = document.querySelector("#unity-canvas");
-            const loadingCover = document.querySelector("#loading-cover");
-            const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
-            const progressBarFull = document.querySelector("#unity-progress-bar-full");
-            const fullscreenButton = document.querySelector("#unity-fullscreen-button");
-            const spinner = document.querySelector('.spinner');
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+    const progressBarFull = document.querySelector("#unity-progress-bar-full");
+    const fullscreenButton = document.querySelector("#unity-fullscreen-button");
+    const spinner = document.querySelector('.spinner');
 
-            const canFullscreen = (function() {
-              for (const key of [
-                  'exitFullscreen',
-                  'webkitExitFullscreen',
-                  'webkitCancelFullScreen',
-                  'mozCancelFullScreen',
-                  'msExitFullscreen',
-                ]) {
-                if (key in document) {
-                  return true;
-                }
-              }
-              return false;
-            }());
+    const canFullscreen = (function () {
+      for (const key of [
+        'exitFullscreen',
+        'webkitExitFullscreen',
+        'webkitCancelFullScreen',
+        'mozCancelFullScreen',
+        'msExitFullscreen',
+      ]) {
+        if (key in document) {
+          return true;
+        }
+      }
+      return false;
+    }());
 
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-              container.className = "unity-mobile";
-              config.devicePixelRatio = 1;
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      container.className = "unity-mobile";
+      config.devicePixelRatio = 1;
+    }
+    loadingCover.style.display = "";
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      import('./lib/thirdweb-unity-bridge.js').then(module => {
+        createUnityInstance(canvas, config, (progress) => {
+          spinner.style.display = "none";
+          progressBarEmpty.style.display = "";
+          progressBarFull.style.width = `${100 * progress}%`;
+        }).then((unityInstance) => {
+          console.log('Instance created', window.Telegram.WebApp);
+          window.unityInstance = unityInstance;
+          window.unityInstance.SendMessage("TelegramController", "SetWebAppUser", JSON.stringify(window.Telegram.WebApp.initDataUnsafe.user));
+          loadingCover.style.display = "none";
+          if (canFullscreen) {
+            if (!hideFullScreenButton) {
+              fullscreenButton.style.display = "";
             }
-            loadingCover.style.display = "";
-            const script = document.createElement("script");
-            script.src = loaderUrl;
-            script.onload = () => {
-              import('./lib/thirdweb-unity-bridge.js').then(module => {
-                createUnityInstance(canvas, config, (progress) => {
-                  spinner.style.display = "none";
-                  progressBarEmpty.style.display = "";
-                  progressBarFull.style.width = `${100 * progress}%`;
-                }).then((unityInstance) => {
-                  loadingCover.style.display = "none";
-                  if (canFullscreen) {
-                    if (!hideFullScreenButton) {
-                      fullscreenButton.style.display = "";
-                    }
-                    fullscreenButton.onclick = () => {
-                      unityInstance.SetFullscreen(1);
-                    };
-                  }
-                }).catch((message) => {
-                  alert(message);
-                });
-              });
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
             };
-            document.body.appendChild(script);
-    </script>
-  </body>
+          }
+        }).catch((message) => {
+          alert(message);
+        });
+      });
+    };
+    document.body.appendChild(script);
+  </script>
+  <script>
+    if (window.Telegram.WebApp) {
+      window.Telegram.WebApp.onEvent('qrTextReceived', async (obj) => {
+        console.log('#qrTextReceived', obj)
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage("TelegramController", "OnQrDetected", obj.data);
+        }
+      })
+    }
+  </script>
+  <script>
+    let tonConnectUI;
+    const tonweb = new TonWeb();
+
+    // Initialize TonConnect
+    async function initTonConnect() {
+      tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: 'https://greensoilorganic.com/wow/wow-telegram-wallet.json', // Replace with your app's manifest URL
+      });
+    }
+
+    // Function to connect wallet
+    async function connectWallet() {
+      try {
+        await tonConnectUI.connectWallet(); // Connect wallet
+        const walletAddress = tonConnectUI.wallet.account.address; // Get wallet address
+        return walletAddress; // Return wallet address to Unity
+      } catch (error) {
+        console.error('Error connecting wallet:', error);
+        return null; // Return null in case of error
+      }
+    }
+
+    // Function to disconnect wallet
+    async function disconnectWallet() {
+      try {
+        await tonConnectUI.disconnect(); // Disconnect wallet
+        return true; // Return true if successfully disconnected
+      } catch (error) {
+        console.error('Error disconnecting wallet:', error);
+        return false; // Return false in case of error
+      }
+    }
+
+    // Function to send transaction
+    async function sendTransaction(recipientAddress, amountInTon) {
+      const amountInNanotons = amountInTon * 1e9; // Convert to nanotons
+
+      const transaction = {
+        validUntil: Math.floor(Date.now() / 1000) + 600,
+        messages: [
+          {
+            address: recipientAddress,
+            amount: amountInNanotons.toString(),
+          }
+        ],
+      };
+
+      try {
+        const result = await tonConnectUI.sendTransaction(transaction);
+        const msgHash = await getTransactionHash(result.boc); // Get transaction hash
+        return { success: true, hash: msgHash }; // Return hash on success
+      } catch (error) {
+        console.error('Error sending transaction:', error);
+        return { success: false, error: error.message }; // Return error message on failure
+      }
+    }
+
+    // Function to convert BOC to hash
+    async function getTransactionHash(bocString) {
+      try {
+        const tonweb = new TonWeb();
+        const bocCell = tonweb.boc.Cell.oneFromBoc(tonweb.utils.base64ToBytes(bocString));
+        const msgHash = await bocCell.hash(); // Await the hash calculation
+        return tonweb.utils.bytesToBase64(msgHash); // Convert the hash to base64 format
+      } catch (error) {
+        console.error("Error calculating hash:", error);
+        return null; // Return null on error
+      }
+    }
+
+    // Expose functions to Unity
+    window.connectWallet = connectWallet;
+    window.disconnectWallet = disconnectWallet;
+    window.sendTransaction = sendTransaction;
+
+    // Initialize TonConnect on page load
+    window.addEventListener('load', initTonConnect);
+  </script>
+</body>
+
 </html>
